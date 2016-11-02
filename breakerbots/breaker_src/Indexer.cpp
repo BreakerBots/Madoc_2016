@@ -19,8 +19,61 @@
 		  spinLeft(spinL),
 		  spinRight(spinR),
 
+		  _usingArm(true),
 		  arm(armTalon),
 		  roller(rollerTalon),
+
+		  ps(printStream),
+
+		  timer(),
+		  _timerDelay(1),
+
+		  _currentMode(IndexerMode::ballOut),
+
+		  _indexerOPEN(130),
+		  _indexerCLOSED(75),
+		  _indexerPos(_indexerOPEN),
+
+		  _kickerLOAD(180),
+		  _kickerFIRE(90),
+		  _kickerPos(_kickerLOAD),
+
+		  _tilterDOWN(0),
+		  _tilterLEVEL(1061),
+		  _tilterUP(1553),
+
+		  _tilterPos(_tilterLEVEL),
+
+		  _spinIN(.2),
+		  _spinOUT(-.2),
+		  _spinSF(_spinIN),
+
+		  _rollerSpeed(0)
+
+
+	{
+	}
+
+	Indexer::Indexer(Joystick& js, AnalogInput& sensor,
+			float proxSensor_point,
+			Servo& ind, Servo& kick, CANTalon& tilt,
+			CANTalon& spinL, CANTalon& spinR, PrintStream& printStream
+			)
+		:
+		  robots_joystick(js),
+		  proxSensor(sensor),
+		  proxSensor_detected(proxSensor_point),
+
+		  indexer(ind),
+		  kicker(kick),
+		  tilter(tilt),
+
+		  spinLeft(spinL),
+		  spinRight(spinR),
+
+		  _usingArm(false),
+		  arm(nullptr),
+		  roller(nullptr),
 
 		  ps(printStream),
 
@@ -58,7 +111,7 @@
 		case IndexerMode::	ballOut:
 			if (robots_joystick.GetRawButton(XBox::x)){
 				_currentMode = IndexerMode::ballIntake;
-				arm.arm_intake();
+				if (_usingArm) arm.arm_intake();
 			}
 			break;
 		case IndexerMode::ballIntake:
@@ -72,7 +125,7 @@
 		case IndexerMode::neutral:
 			if ( robots_joystick.GetRawButton(XBox::a) ){
 				_currentMode = IndexerMode::armed;
-				arm.arm_clear();
+				if (_usingArm) arm.arm_clear();
 			}
 			break;
 		case IndexerMode::armed:

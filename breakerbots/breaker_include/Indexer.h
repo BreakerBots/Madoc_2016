@@ -32,6 +32,7 @@ private:
 	CANTalon& spinLeft;
 	CANTalon& spinRight;
 
+	bool _usingArm;
 	Arm& arm;
 	CANTalon& roller;
 
@@ -69,6 +70,10 @@ public:
 			CANTalon& spinL, CANTalon& spinR, Arm& armTalon, CANTalon& roller,
 			PrintStream& printStream
 			);
+	Indexer(Joystick& js, AnalogInput& sensor, float proxSensor_point,
+				Servo& ind, Servo& kick, CANTalon& tilt,
+				CANTalon& spinL, CANTalon& spinR, PrintStream& printStream
+				);
 
 	void setMode();
 
