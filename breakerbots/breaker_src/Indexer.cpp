@@ -1,58 +1,6 @@
 #include "WPILIB.h"
 #include "breakerbots.h"
 //--------------INDEXER CLASS----------------------//
-	Indexer::Indexer(Joystick& js, AnalogInput& sensor,
-			float proxSensor_point,
-			Servo& ind, Servo& kick, CANTalon& tilt,
-			CANTalon& spinL, CANTalon& spinR, Arm& armTalon, CANTalon& rollerTalon,
-			PrintStream& printStream
-			)
-		:
-		  robots_joystick(js),
-		  proxSensor(sensor),
-		  proxSensor_detected(proxSensor_point),
-
-		  indexer(ind),
-		  kicker(kick),
-		  tilter(tilt),
-
-		  spinLeft(spinL),
-		  spinRight(spinR),
-
-		  _usingArm(true),
-		  arm(armTalon),
-		  roller(rollerTalon),
-
-		  ps(printStream),
-
-		  timer(),
-		  _timerDelay(1),
-
-		  _currentMode(IndexerMode::ballOut),
-
-		  _indexerOPEN(130),
-		  _indexerCLOSED(75),
-		  _indexerPos(_indexerOPEN),
-
-		  _kickerLOAD(180),
-		  _kickerFIRE(90),
-		  _kickerPos(_kickerLOAD),
-
-		  _tilterDOWN(0),
-		  _tilterLEVEL(1061),
-		  _tilterUP(1553),
-
-		  _tilterPos(_tilterLEVEL),
-
-		  _spinIN(.2),
-		  _spinOUT(-.2),
-		  _spinSF(_spinIN),
-
-		  _rollerSpeed(0)
-
-
-	{
-	}
 
 	Indexer::Indexer(Joystick& js, AnalogInput& sensor,
 			float proxSensor_point,
@@ -70,10 +18,6 @@
 
 		  spinLeft(spinL),
 		  spinRight(spinR),
-
-		  _usingArm(false),
-		  arm(nullptr),
-		  roller(nullptr),
 
 		  ps(printStream),
 
@@ -111,7 +55,6 @@
 		case IndexerMode::	ballOut:
 			if (robots_joystick.GetRawButton(XBox::x)){
 				_currentMode = IndexerMode::ballIntake;
-				if (_usingArm) arm.arm_intake();
 			}
 			break;
 		case IndexerMode::ballIntake:
@@ -125,7 +68,6 @@
 		case IndexerMode::neutral:
 			if ( robots_joystick.GetRawButton(XBox::a) ){
 				_currentMode = IndexerMode::armed;
-				if (_usingArm) arm.arm_clear();
 			}
 			break;
 		case IndexerMode::armed:
@@ -250,30 +192,6 @@
 		}//switch statement
 		tilter.Set(_tilterPos);
 	}//kick
-	void Indexer::roll(){
-		switch (_currentMode){
-		case IndexerMode::ballOut:
-			_rollerSpeed = 0;
-			break;
-		case IndexerMode::ballIntake:
-			_rollerSpeed = .8;
-			break;
-		case IndexerMode::neutral:
-			_rollerSpeed = 0;
-			break;
-		case IndexerMode::armed:
-			_rollerSpeed = 0;
-			break;
-		case IndexerMode::fire:
-			_rollerSpeed = 0;
-			break;
-		case IndexerMode::eject:
-			_rollerSpeed = 0;
-			break;
-		}//switch statement
-		roller.Set(_rollerSpeed);
-	}//roll
-
 
 	void Indexer::debug(DebugRange debugAmount){
 		if (debugAmount == DebugRange::MIN){
@@ -286,7 +204,6 @@
 			ps.print("Kicker Position: "  , _kickerPos);
 			ps.print("SpinSF: "           , _spinSF);
 			ps.print("TiltAngle: "  	  , _tilterPos);
-			ps.print("Rollers: "		  , _rollerSpeed);
 		} else if (debugAmount == DebugRange::MAX){
 			ps.print(modeToString(_currentMode));
 
@@ -294,7 +211,6 @@
 			ps.print("Kicker Position: "  , _kickerPos);
 			ps.print("SpinSF: "           , _spinSF);
 			ps.print("TiltAngle: "  	  , _tilterPos);
-			ps.print("Rollers: "		  , _rollerSpeed);
 
 		}
 
@@ -309,7 +225,6 @@
 		kick();
 		spin();
 		tilt();
-		roll();
 
 		debug(debugAmount);
 	}
