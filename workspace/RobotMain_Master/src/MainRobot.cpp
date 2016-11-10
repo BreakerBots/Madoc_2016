@@ -322,7 +322,8 @@ private:
 //			printf("ROCK_WALL\n");
 			//Sprint over defenses 	-- MOAT 			-- RAMPARTS
 			//						-- ROUGH_TERRAIN	-- ROCK_WALL;
-			switch(_autoState){
+			//Old Version, Did not work, tilted robot to the side.
+/*			switch(_autoState){
 			case 0:
 				//Lower arm to stabilize robot.
 				delay(2);
@@ -336,6 +337,9 @@ private:
 				bruinDrive.ArcadeDrive(0,0,false);
 				break;
 			}
+		*/
+			//Same approach as rough terrain, successful
+			basicBreach();
 			break;
 		}
 
