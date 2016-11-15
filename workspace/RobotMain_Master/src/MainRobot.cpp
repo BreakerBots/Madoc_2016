@@ -98,7 +98,11 @@ public:
 
 	ballIntakeCalibrator.setTimerDelay(1.5);
 	ballIntakeCalibrator.setSpinIN(.4);
-	ballIntakeCalibrator.setSpinOUT(-.7);
+	//Value used in CalGames for this is -.7, but the ball keeps
+	//bouncing out of the goal. So we adjusted this value to
+	//make the ball come out slower with the hope that more
+	//goals stay in!
+	ballIntakeCalibrator.setSpinOUT(-.4);
 #endif
 
 	}
@@ -531,6 +535,9 @@ private:
 //		tilterTalon.SetPID(tilterPID[0],tilterPID[1],tilterPID[2]);
 		tilterTalon.SetPID(0.55,0,0);
 		ballIntakeCalibrator.setTilterDOWN(0);
+
+		//Hayden / HAYDEN / hayden / haeden
+		//  Max (B & X) value goes here -----V
 		ballIntakeCalibrator.setTilterLEVEL(1300);
 		ballIntakeCalibrator.setTilterUP(1300);
 
@@ -553,3 +560,4 @@ private:
 };
 
 START_ROBOT_CLASS(Robot)
+
