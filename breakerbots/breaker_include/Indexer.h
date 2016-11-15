@@ -10,7 +10,6 @@
 
 #include "WPILIB.h"
 #include "PrintStream.h"
-#include "Arm.h"
 
 class Indexer {
 public:
@@ -31,9 +30,6 @@ private:
 	CANTalon& tilter;
 	CANTalon& spinLeft;
 	CANTalon& spinRight;
-
-	Arm& arm;
-	CANTalon& roller;
 
 	PrintStream& ps;
 
@@ -65,11 +61,10 @@ private:
 public:
 
 	Indexer(Joystick& js, AnalogInput& sensor, float proxSensor_point,
-			Servo& ind, Servo& kick, CANTalon& tilt,
-			CANTalon& spinL, CANTalon& spinR, Arm& armTalon, CANTalon& roller,
-			PrintStream& printStream
-			);
-
+				Servo& ind, Servo& kick, CANTalon& tilt,
+				CANTalon& spinL, CANTalon& spinR,
+				PrintStream& printStream
+				);
 	void setMode();
 
 	void index();

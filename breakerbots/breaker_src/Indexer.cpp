@@ -1,11 +1,11 @@
 #include "WPILIB.h"
 #include "breakerbots.h"
 //--------------INDEXER CLASS----------------------//
+
 	Indexer::Indexer(Joystick& js, AnalogInput& sensor,
 			float proxSensor_point,
 			Servo& ind, Servo& kick, CANTalon& tilt,
-			CANTalon& spinL, CANTalon& spinR, Arm& armTalon, CANTalon& rollerTalon,
-			PrintStream& printStream
+			CANTalon& spinL, CANTalon& spinR, PrintStream& printStream
 			)
 		:
 		  robots_joystick(js),
@@ -18,9 +18,6 @@
 
 		  spinLeft(spinL),
 		  spinRight(spinR),
-
-		  arm(armTalon),
-		  roller(rollerTalon),
 
 		  ps(printStream),
 
@@ -58,7 +55,6 @@
 		case IndexerMode::	ballOut:
 			if (robots_joystick.GetRawButton(XBox::x)){
 				_currentMode = IndexerMode::ballIntake;
-				arm.arm_intake();
 			}
 			break;
 		case IndexerMode::ballIntake:
@@ -72,7 +68,6 @@
 		case IndexerMode::neutral:
 			if ( robots_joystick.GetRawButton(XBox::a) ){
 				_currentMode = IndexerMode::armed;
-				arm.arm_clear();
 			}
 			break;
 		case IndexerMode::armed:
@@ -197,30 +192,6 @@
 		}//switch statement
 		tilter.Set(_tilterPos);
 	}//kick
-	void Indexer::roll(){
-		switch (_currentMode){
-		case IndexerMode::ballOut:
-			_rollerSpeed = 0;
-			break;
-		case IndexerMode::ballIntake:
-			_rollerSpeed = .8;
-			break;
-		case IndexerMode::neutral:
-			_rollerSpeed = 0;
-			break;
-		case IndexerMode::armed:
-			_rollerSpeed = 0;
-			break;
-		case IndexerMode::fire:
-			_rollerSpeed = 0;
-			break;
-		case IndexerMode::eject:
-			_rollerSpeed = 0;
-			break;
-		}//switch statement
-		roller.Set(_rollerSpeed);
-	}//roll
-
 
 	void Indexer::debug(DebugRange debugAmount){
 		if (debugAmount == DebugRange::MIN){
@@ -233,7 +204,6 @@
 			ps.print("Kicker Position: "  , _kickerPos);
 			ps.print("SpinSF: "           , _spinSF);
 			ps.print("TiltAngle: "  	  , _tilterPos);
-			ps.print("Rollers: "		  , _rollerSpeed);
 		} else if (debugAmount == DebugRange::MAX){
 			ps.print(modeToString(_currentMode));
 
@@ -241,7 +211,6 @@
 			ps.print("Kicker Position: "  , _kickerPos);
 			ps.print("SpinSF: "           , _spinSF);
 			ps.print("TiltAngle: "  	  , _tilterPos);
-			ps.print("Rollers: "		  , _rollerSpeed);
 
 		}
 
@@ -256,7 +225,6 @@
 		kick();
 		spin();
 		tilt();
-		roll();
 
 		debug(debugAmount);
 	}

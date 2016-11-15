@@ -3,10 +3,7 @@
 #include <math.h>
 
 #define DRIVE_ENABLED
-//#define ELBOW_ENABLED
 #define SHOOTER_ENABLED
-
-//#define AUTO_CHOOSER_ENABLED
 
 
 class Robot: public IterativeRobot
@@ -35,12 +32,6 @@ private:
 	RobotDrive bruinDrive; // robot drive system
 #endif
 
-//#ifdef ELBOW_ENABLED
-	Arm arm;
-	CANTalon roller;
-//#endif
-
-
 #ifdef SHOOTER_ENABLED
 	AnalogInput proxSensor;
 	float proxSensor_detected;//Float value of voltage at which point the above sensor is 'triggered'
@@ -53,17 +44,6 @@ private:
 	CANTalon spinRight;
 
 	Indexer ballIntakeCalibrator;
-#endif
-
-#ifdef AUTO_CHOOSER_ENABLED
-
-	Command *autonomousCommand;
-	SendableChooser *chooser;
-
-#endif
-
-#ifdef TEST_ENABLED
-//	float a;
 #endif
 
 public:
@@ -86,11 +66,6 @@ public:
 		bruinDrive(frontLeft, backLeft, frontRight, backRight)
 #endif
 
-//#ifdef ELBOW_ENABLED
-		,arm(xbox,SRXMotors::elbow),
-		roller(SRXMotors::roller)
-//#endif
-
 #ifdef SHOOTER_ENABLED
 		,proxSensor(3),
 		proxSensor_detected(1.7),
@@ -104,26 +79,13 @@ public:
 
 		ballIntakeCalibrator(xbox,proxSensor, proxSensor_detected,
 			servoIndexer,servoKicker, tilterTalon,
-			spinLeft, spinRight, arm, roller, ps)
-#endif
-
-#ifdef AUTO_CHOOSER_ENABLED
-		,_timer(),
-		chooser(new SendableChooser())
-#endif
-
-#ifdef TEST_ENABLED
-//	,a(0)
+			spinLeft, spinRight, ps)
 #endif
 
 	{
 #ifdef DRIVE_ENABLED
 	bruinDrive.SetSafetyEnabled(false);
 	driveCalibrator.setPrecisionEffort(0.5);
-#endif
-
-#ifdef ELBOW_ENABLED
-	//Do Nothing
 #endif
 
 #ifdef SHOOTER_ENABLED
@@ -136,15 +98,11 @@ public:
 
 	ballIntakeCalibrator.setTimerDelay(1.5);
 	ballIntakeCalibrator.setSpinIN(.4);
-	ballIntakeCalibrator.setSpinOUT(-.7);
-#endif
-
-#ifdef AUTO_CHOOSER_ENABLED
-
-	chooser->AddDefault("Forward",new Forward());
-	chooser->AddObject("Spin",new Spin());
-	SmartDashboard::PutData("Autonomous Modes: ",chooser);
-
+	//Value used in CalGames for this is -.7, but the ball keeps
+	//bouncing out of the goal. So we adjusted this value to
+	//make the ball come out slower with the hope that more
+	//goals stay in!
+	ballIntakeCalibrator.setSpinOUT(-.4);
 #endif
 
 	}
@@ -208,11 +166,6 @@ private:
 		_timer.Reset();
 		_timer.Start();
 
-#ifdef AUTO_CHOOSER_ENABLED
-		autonomousCommand = (Command *) chooser->GetSelected();
-		autonomousCommand->Start();
-#endif
-
 #ifdef SHOOTER_ENABLED
 		printf("Shooter Voltage: %F\n",proxSensor.GetVoltage());
 		if (proxSensor.GetVoltage() > proxSensor_detected){
@@ -238,9 +191,6 @@ private:
 //			printf("LOW_BAR\n");
 			switch (_autoState){
 			case 0:
-#ifdef ELBOW_ENABLED
-				arm.arm_prep();
-#endif
 
 				delay(2);
 				break;
@@ -258,9 +208,6 @@ private:
 //			printf("PORTCULLIS\n");
 			switch (_autoState){
 			case 0:
-#ifdef ELBOW_ENABLED
-				arm.arm_prep();
-#endif
 
 				delay(2);
 				break;
@@ -272,18 +219,10 @@ private:
 			case 2:
 				bruinDrive.ArcadeDrive(-.4,0,false);
 
-#ifdef ELBOW_ENABLED
-				arm.arm_intake();
-#endif
-
 				delay(2);
 				break;
 			case 3:
 				bruinDrive.ArcadeDrive(-.6,0,false);
-#ifdef ELBOW_ENABLED
-				arm.arm_clear();
-#endif
-
 
 				delay(2);
 				break;
@@ -295,12 +234,8 @@ private:
 			break;
 		case AutoMode::CHEVAL:
 //			printf("CHEVAL\n");
-			//TODO -- Need some sort of sensor to tell where cheval is.
 			switch (_autoState){
 			case 0:
-#ifdef ELBOW_ENABLED
-				arm.arm_intake();
-#endif
 				delay(2);
 				break;
 			case 1:
@@ -310,9 +245,6 @@ private:
 				break;
 			case 2:
 				bruinDrive.ArcadeDrive(0,0,false);
-#ifdef ELBOW_ENABLED
-				arm.arm_prep();
-#endif
 				delay(2);
 				break;
 			case 3:
@@ -332,9 +264,6 @@ private:
 //			printf("RAMPARTS\n");
 			switch(_autoState){
 			case 0:
-#ifdef ELBOW_ENABLED
-				arm.arm_intake();
-#endif
 				delay(2);
 				break;
 			case 1:
@@ -397,13 +326,10 @@ private:
 //			printf("ROCK_WALL\n");
 			//Sprint over defenses 	-- MOAT 			-- RAMPARTS
 			//						-- ROUGH_TERRAIN	-- ROCK_WALL;
-			switch(_autoState){
+			//Old Version, Did not work, tilted robot to the side.
+/*			switch(_autoState){
 			case 0:
 				//Lower arm to stabilize robot.
-	#ifdef ELBOW_ENABLED
-				arm.arm_intake();
-	#endif
-
 				delay(2);
 				break;
 			case 1:
@@ -415,16 +341,13 @@ private:
 				bruinDrive.ArcadeDrive(0,0,false);
 				break;
 			}
+		*/
+			//Same approach as rough terrain, successful
+			basicBreach();
 			break;
 		}
 
 #endif //DRIVE_ENABLED (Autonomous is pointless w/o drive.
-
-#ifdef AUTO_CHOOSER_ENABLED
-		Scheduler::GetInstance()->Run();
-
-
-#endif
 
 
 	}
@@ -438,9 +361,6 @@ private:
 	void approach(){
 		switch(_autoState){
 		case 0:
-#ifdef ELBOW_ENABLED
-			arm.arm_intake();
-#endif
 			delay(2);
 			break;
 		case 1:
@@ -519,9 +439,6 @@ private:
 		switch(_autoState){
 		case 0:
 			//Lower arm to stabilize robot.
-#ifdef ELBOW_ENABLED
-			arm.arm_intake();
-#endif
 			delay(2);
 			break;
 		case 1:
@@ -578,47 +495,6 @@ private:
 //		ps.print(Utilities::concat("TurboX: ",driveCalibrator.turboEngagedX()));
 //		ps.print(Utilities::concat("TurboY: ",driveCalibrator.turboEngagedY()));
 #endif
-#ifdef ELBOW_ENABLED
-/*
-//		for (int i=0;i<4;i++){
-//			PIDF[i] = SmartDashboard::GetNumber(Utilities::concat("DB/Slider ",i),-1);
-//		}
-		PIDF[0] = 400;
-		PIDF[1] = 0;
-		PIDF[2] = 0;
-		PIDF[3] = 0;
-		elbow.SetPID(PIDF[0],PIDF[1],PIDF[2],PIDF[3]);
-
-		//New Indexer Mode
-		Indexer::IndexerMode mode = ballIntakeCalibrator.currentMode();
-		//Check for a mode change from the Indexer object
-		if (mode != _oldMode){
-			//This code should run once every state transition
-			switch (mode){//If the Indexer has transitions into...
-			case Indexer::ballIntake:
-				_elbowTarget = _elbowIntake;
-				break;
-			case Indexer::armed:
-				_elbowTarget = _elbowClear;
-				break;
-			}
-		}
-		if(xbox.GetRawButton(XBox::NOTy)){
-			_elbowTarget= _elbowPrep;
-		}
-		_elbowTarget -= Utilities::deadBand(xbox.GetRawAxis(XBox::rightY),0.1,2);
-
-		elbow.Set(_elbowTarget);
-
-		_oldMode = mode;
-*/
-
-		arm.monitor();
-//		printf("Arm: %F\n",arm.target());
-
-		ps.print("Arm: ",arm.target());
-
-#endif
 #ifdef SHOOTER_ENABLED
 //		ballIntakeCalibrator.setTilterDOWN(SmartDashboard::GetNumber("MyVars/TilterDown",0));
 //		printf("Down: %d\n",ballIntakeCalibrator.tilterDOWN());
@@ -634,31 +510,17 @@ private:
 #endif
 
 
-#ifdef TEST_ENABLED
-//		SmartDashboard::PutNumber("TEST_VALUE",SmartDashboard::GetNumber("DB/Slider 0",0));
-		SmartDashboard::PutNumber("DB/Slider 1",SmartDashboard::GetNumber("TEST_VALUE",-1));
-#endif
 	}
 
 	void loadDashValues(){
 		dashLoaded = true;
 		//Load NetworkTable values for the tilter and arm.
-#ifdef ELBOW_ENABLED
-		float armPID[3];
-		float armSet[3];
-#endif
 #ifdef SHOOTER_ENABLED
 		float tilterPID[3];
 		float tilterSet[3];
 #endif
 
 		for (int i=0;i<3;i++){
-#ifdef ELBOW_ENABLED
-			armPID[i] = SmartDashboard::GetNumber(
-					Utilities::concat("armPID ",i),0);
-			armSet[i] = SmartDashboard::GetNumber(
-					Utilities::concat("armSet ",i),300*i);
-#endif
 
 #ifdef SHOOTER_ENABLED
 			tilterPID[i] = SmartDashboard::GetNumber(
@@ -668,22 +530,14 @@ private:
 #endif
 		}
 
-#ifdef ELBOW_ENABLED
-//		arm.SetPID(armPID[0],armPID[1],armPID[2]);
-		arm.SetPID(20,0,0);
-
-//		arm.setPrep(armSet[0]);
-//		arm.setIntake(armSet[1]);
-//		arm.setClear(armSet[2]);
-		arm.setPrep(660);
-		arm.setIntake(811);
-		arm.setClear(917);
-#endif
 
 #ifdef SHOOTER_ENABLED
 //		tilterTalon.SetPID(tilterPID[0],tilterPID[1],tilterPID[2]);
 		tilterTalon.SetPID(0.55,0,0);
 		ballIntakeCalibrator.setTilterDOWN(0);
+
+		//Hayden / HAYDEN / hayden / haeden
+		//  Max (B & X) value goes here -----V
 		ballIntakeCalibrator.setTilterLEVEL(1300);
 		ballIntakeCalibrator.setTilterUP(1300);
 
@@ -691,10 +545,6 @@ private:
 //		ballIntakeCalibrator.setTilterDOWN(tilterSet[0]);
 //		ballIntakeCalibrator.setTilterLEVEL(tilterSet[1]);
 //		ballIntakeCalibrator.setTilterUP(tilterSet[2]);
-#endif
-#ifdef ELBOW_ENABLED
-		printf("Arm--\tP: %F\tI: %F\tD: %F\n",armPID[0],armPID[1],armPID[2]);
-		printf("Arm--\tPrep: %F\tIntake: %F\tClear: %F\n",armSet[0],armSet[1],armSet[2]);
 #endif
 #ifdef SHOOTER_ENABLED
 		printf("Tilter--\tP: %F\tI: %F\tD: %F\n",tilterPID[0],tilterPID[1],tilterPID[2]);
@@ -710,3 +560,4 @@ private:
 };
 
 START_ROBOT_CLASS(Robot)
+
