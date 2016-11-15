@@ -1,0 +1,8 @@
+
+The master branch is a *stable* copy of the newest code. No editting (save possibly that of hard-coded variables) should be made directly on this branch. Instead, develop upon test (or some other dev branch) and then merge that branch into master if it builds, and if the changes are desired to be permanent.
+
+
+-- Henry Loh
+
+
+
